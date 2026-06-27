@@ -6,6 +6,19 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  // Clear existing data
+  await prisma.activityLog.deleteMany({});
+  await prisma.fAQ.deleteMany({});
+  await prisma.testimonial.deleteMany({});
+  await prisma.blogPost.deleteMany({});
+  await prisma.enrollment.deleteMany({});
+  await prisma.lead.deleteMany({});
+  await prisma.mentor.deleteMany({});
+  await prisma.program.deleteMany({});
+  await prisma.service.deleteMany({});
+  await prisma.university.deleteMany({});
+  await prisma.user.deleteMany({});
+
   // ─── Users ──────────────────────────────────────────────
   const adminPassword = await bcrypt.hash("admin123", 10);
   const counsellorPassword = await bcrypt.hash("counsellor123", 10);
