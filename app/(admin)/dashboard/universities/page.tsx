@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, ExternalLink, Edit, Plus } from "lucide-react";
 
-export default async function UniversitiesAdminPage({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
-  const search = searchParams.search;
+export default async function UniversitiesAdminPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  const resolvedSearchParams = await searchParams;
+  const search = resolvedSearchParams.search;
   const where: any = {};
   if (search) where.name = { contains: search, mode: "insensitive" };
 

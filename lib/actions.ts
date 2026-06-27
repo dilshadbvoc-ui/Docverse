@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
+import { LeadSource, LeadStatus, LeadPriority, ServiceCategory, TieUpStatus, PostStatus } from "@prisma/client";
 import { createToken, setSessionCookie, clearSessionCookie } from "./auth";
 import bcrypt from "bcryptjs";
 
@@ -59,9 +60,9 @@ export async function createLead(formData: FormData) {
       budgetRange: formData.get("budgetRange") as string,
       isUrgent: formData.get("isUrgent") === "true",
       preferredCallTime: formData.get("preferredCallTime") as string,
-      source: (formData.get("source") as string) || "ORGANIC",
-      status: "NEW",
-      priority: "MEDIUM",
+      source: ((formData.get("source") as string) || "ORGANIC") as LeadSource,
+      status: "NEW" as LeadStatus,
+      priority: "MEDIUM" as LeadPriority,
     };
 
     const lead = await prisma.lead.create({ data });
@@ -84,7 +85,7 @@ export async function createLead(formData: FormData) {
   }
 }
 
-export async function updateLeadStatus(leadId: string, status: string, notes?: string) {
+export async function updateLeadStatus(leadId: string, status: LeadStatus, notes?: string) {
   try {
     const lead = await prisma.lead.update({
       where: { id: leadId },
@@ -138,7 +139,7 @@ export async function createUniversity(formData: FormData) {
       naacGrade: formData.get("naacGrade") as string,
       nirfRank: formData.get("nirfRank") ? parseInt(formData.get("nirfRank") as string) : null,
       isPartner: formData.get("isPartner") === "true",
-      tieUpStatus: (formData.get("tieUpStatus") as string) || "PENDING",
+      tieUpStatus: ((formData.get("tieUpStatus") as string) || "PENDING") as TieUpStatus,
     };
 
     const university = await prisma.university.create({ data });
@@ -164,7 +165,7 @@ export async function updateUniversity(id: string, formData: FormData) {
       naacGrade: formData.get("naacGrade") as string,
       nirfRank: formData.get("nirfRank") ? parseInt(formData.get("nirfRank") as string) : null,
       isPartner: formData.get("isPartner") === "true",
-      tieUpStatus: formData.get("tieUpStatus") as string,
+      tieUpStatus: (formData.get("tieUpStatus") as string) as TieUpStatus,
       isActive: formData.get("isActive") === "true",
     };
 
@@ -188,7 +189,7 @@ export async function createService(formData: FormData) {
     const data = {
       name: formData.get("name") as string,
       slug: formData.get("slug") as string,
-      category: formData.get("category") as string,
+      category: (formData.get("category") as string) as ServiceCategory,
       description: formData.get("description") as string,
       shortDesc: formData.get("shortDesc") as string,
       features: JSON.stringify((formData.get("features") as string).split("\n").filter(Boolean)),
@@ -212,7 +213,7 @@ export async function updateService(id: string, formData: FormData) {
   try {
     const data = {
       name: formData.get("name") as string,
-      category: formData.get("category") as string,
+      category: (formData.get("category") as string) as ServiceCategory,
       description: formData.get("description") as string,
       shortDesc: formData.get("shortDesc") as string,
       features: JSON.stringify((formData.get("features") as string).split("\n").filter(Boolean)),
@@ -244,7 +245,7 @@ export async function createBlogPost(formData: FormData) {
       author: formData.get("author") as string,
       category: formData.get("category") as string,
       tags: JSON.stringify((formData.get("tags") as string).split(",").map((t) => t.trim())),
-      status: formData.get("status") as string,
+      status: (formData.get("status") as string) as PostStatus,
       publishedAt: formData.get("publishedAt") ? new Date(formData.get("publishedAt") as string) : null,
     };
 
@@ -266,7 +267,7 @@ export async function updateBlogPost(id: string, formData: FormData) {
       author: formData.get("author") as string,
       category: formData.get("category") as string,
       tags: JSON.stringify((formData.get("tags") as string).split(",").map((t) => t.trim())),
-      status: formData.get("status") as string,
+      status: (formData.get("status") as string) as PostStatus,
       publishedAt: formData.get("publishedAt") ? new Date(formData.get("publishedAt") as string) : null,
     };
 

@@ -8,9 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, Eye, Phone, Mail } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
-export default async function LeadsPage({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
-  const search = searchParams.search;
-  const status = searchParams.status;
+export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  const resolvedSearchParams = await searchParams;
+  const search = resolvedSearchParams.search;
+  const status = resolvedSearchParams.status;
 
   const where: any = {};
   if (search) {

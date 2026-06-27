@@ -178,7 +178,7 @@ export function ProgramMatcher({ programs, disciplines, states }: ProgramMatcher
                     <h3 className="text-2xl md:text-3xl font-extrabold text-[#181C26] tracking-tight">
                       What is your preferred research discipline?
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {disciplines.map(d => (
                         <button
                           key={d}
@@ -238,7 +238,7 @@ export function ProgramMatcher({ programs, disciplines, states }: ProgramMatcher
                     <h3 className="text-2xl md:text-3xl font-extrabold text-[#181C26] tracking-tight">
                       Any university location preference?
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       <button
                         onClick={() => {
                           setSelectedState("")

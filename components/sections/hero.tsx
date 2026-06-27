@@ -33,16 +33,16 @@ export function HeroSection() {
             </h1>
 
             {/* Search Input Box */}
-            <div className="flex items-center bg-white border border-slate-200 shadow-sm rounded-2xl p-1.5 max-w-lg w-full">
-              <div className="flex items-center flex-1 px-3">
-                <Search className="h-5 w-5 text-slate-400 mr-2" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center bg-white border border-slate-200 shadow-sm rounded-[24px] sm:rounded-2xl p-1.5 max-w-lg w-full gap-2 sm:gap-0">
+              <div className="flex items-center flex-1 px-3 py-2 sm:py-0">
+                <Search className="h-5 w-5 text-slate-400 mr-2 shrink-0" />
                 <input 
                   type="text" 
                   placeholder="Search your PhD discipline..." 
                   className="w-full bg-transparent border-0 outline-none text-sm text-[#181C26] placeholder-slate-400"
                 />
               </div>
-              <Button className="bg-zinobi-green hover:bg-zinobi-green/90 text-white font-semibold rounded-xl px-6 h-12 transition-all duration-300">
+              <Button className="bg-zinobi-green hover:bg-zinobi-green/90 text-white font-semibold rounded-xl px-6 h-12 transition-all duration-300 w-full sm:w-auto">
                 Search
               </Button>
             </div>

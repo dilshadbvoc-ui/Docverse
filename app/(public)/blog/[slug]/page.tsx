@@ -11,14 +11,16 @@ export async function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const post = await prisma.blogPost.findUnique({ where: { slug: resolvedParams.slug } });
   if (!post) return { title: "Not Found" };
   return { title: `${post.title} | DocVerse Blog`, description: post.excerpt };
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const post = await prisma.blogPost.findUnique({ where: { slug: resolvedParams.slug } });
   if (!post || post.status !== "PUBLISHED") notFound();
 
   const tags = JSON.parse((post.tags as string) || "[]");
