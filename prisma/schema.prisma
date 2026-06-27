@@ -1,0 +1,426 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users & Authentication ───────────────────────────────
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?
+  password      String?
+  role          UserRole  @default(STUDENT)
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  leads         Lead[]
+  enrollments   Enrollment[]
+  mentorProfile Mentor?
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  COUNSELLOR
+  CONTENT_MANAGER
+  FINANCE
+  MENTOR_COORDINATOR
+  MENTOR
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ─── Leads & CRM ──────────────────────────────────────────
+model Lead {
+  id              String      @id @default(cuid())
+  name            String
+  email           String
+  phone           String
+  qualification   String?
+  discipline      String?
+  state           String?
+  modePreference  String?
+  budgetRange     String?
+  isUrgent        Boolean     @default(false)
+  preferredCallTime String?
+
+  source          LeadSource  @default(ORGANIC)
+  utmCampaign     String?
+  utmMedium       String?
+  utmSource       String?
+
+  status          LeadStatus  @default(NEW)
+  priority        LeadPriority @default(MEDIUM)
+  assignedToId    String?
+  assignedTo      User?       @relation(fields: [assignedToId], references: [id])
+
+  notes           String?
+  communicationHistory Json?   // Array of {type, message, timestamp, userId}
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  convertedAt     DateTime?
+
+  // Relations
+  enrollments     Enrollment[]
+
+  @@map("leads")
+}
+
+enum LeadSource {
+  ORGANIC
+  META_ADS
+  GOOGLE_ADS
+  REFERRAL
+  WHATSAPP
+  DIRECT
+  EMAIL
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  FOLLOW_UP
+  CONVERTED
+  LOST
+  DORMANT
+}
+
+enum LeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ─── Universities ───────────────────────────────────────────
+model University {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  shortName       String?
+  description     String?
+  about           String?
+  location        String
+  state           String
+  website         String?
+  email           String?
+  phone           String?
+
+  // Accreditation
+  ugcApproved     Boolean   @default(false)
+  naacGrade       String?
+  nirfRank        Int?
+
+  // Rankings
+  qsRanking       Int?
+  theRanking      Int?
+
+  // Media
+  logoUrl         String?
+  coverImageUrl   String?
+
+  // Status
+  isActive        Boolean   @default(true)
+  isPartner       Boolean   @default(false)
+  tieUpStatus     TieUpStatus @default(PENDING)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  programs        Program[]
+
+  @@map("universities")
+}
+
+enum TieUpStatus {
+  PENDING
+  IN_TALKS
+  CONFIRMED
+  ACTIVE
+  INACTIVE
+}
+
+// ─── Programs (PhD Programs) ──────────────────────────────
+model Program {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  discipline      String
+  description     String?
+  duration        String      // e.g. "3-5 years"
+  mode            ProgramMode
+
+  // Fees
+  feeMin          Int?
+  feeMax          Int?
+  feeCurrency     String      @default("INR")
+
+  // Eligibility
+  eligibility     String?
+  entranceExam    String?
+
+  // Status
+  isActive        Boolean     @default(true)
+  isFeatured      Boolean     @default(false)
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  universityId    String
+  university      University  @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  enrollments     Enrollment[]
+
+  @@map("programs")
+}
+
+enum ProgramMode {
+  FULL_TIME
+  PART_TIME
+  ONLINE
+  DISTANCE
+}
+
+// ─── Services & Packages ──────────────────────────────────
+model Service {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  category        ServiceCategory
+  description     String?
+  shortDesc       String?
+  features        Json?       // Array of feature strings
+
+  // Pricing
+  priceMin        Int?
+  priceMax        Int?
+  priceCurrency   String      @default("INR")
+  isCustomPrice   Boolean     @default(false)
+
+  // Status
+  isActive        Boolean     @default(true)
+  isPopular       Boolean     @default(false)
+  displayOrder    Int         @default(0)
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  enrollments     Enrollment[]
+
+  @@map("services")
+}
+
+enum ServiceCategory {
+  ADMISSION
+  THESIS
+  SYNOPSIS
+  COACHING
+  JOURNAL
+  MENTORING
+  COMPLETE_PACKAGE
+}
+
+// ─── Mentors ──────────────────────────────────────────────
+model Mentor {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id])
+
+  bio             String?
+  expertise       Json?       // Array of discipline strings
+  qualifications  Json?       // Array of {degree, university, year}
+  experience      Int?         // Years
+
+  // Availability
+  isAvailable     Boolean     @default(true)
+  maxStudents     Int         @default(5)
+
+  // Rating
+  rating          Float       @default(0)
+  reviewCount     Int         @default(0)
+
+  // Verification
+  isVerified      Boolean     @default(false)
+  linkedInUrl     String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  enrollments     Enrollment[]
+
+  @@map("mentors")
+}
+
+// ─── Enrollments ──────────────────────────────────────────
+model Enrollment {
+  id              String          @id @default(cuid())
+
+  leadId          String
+  lead            Lead            @relation(fields: [leadId], references: [id])
+
+  programId       String?
+  program         Program?        @relation(fields: [programId], references: [id])
+
+  serviceId       String?
+  service         Service?        @relation(fields: [serviceId], references: [id])
+
+  studentId       String?
+  student         User?           @relation(fields: [studentId], references: [id])
+
+  mentorId        String?
+  mentor          Mentor?         @relation(fields: [mentorId], references: [id])
+
+  status          EnrollmentStatus @default(PENDING)
+  progress        Int             @default(0) // 0-100
+
+  // Payment
+  totalAmount     Int?
+  paidAmount      Int             @default(0)
+  paymentStatus   PaymentStatus   @default(PENDING)
+
+  startDate       DateTime?
+  expectedEndDate DateTime?
+  completedAt     DateTime?
+
+  notes           String?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("enrollments")
+}
+
+enum EnrollmentStatus {
+  PENDING
+  CONFIRMED
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+  FAILED
+}
+
+// ─── Blog / Content ─────────────────────────────────────────
+model BlogPost {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  excerpt         String?
+  content         String
+  coverImage      String?
+
+  // Meta
+  author          String?
+  category        String?
+  tags            Json?       // Array of strings
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  // Status
+  status          PostStatus  @default(DRAFT)
+  publishedAt     DateTime?
+
+  // Analytics
+  viewCount       Int         @default(0)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("blog_posts")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// ─── Testimonials ───────────────────────────────────────────
+model Testimonial {
+  id              String      @id @default(cuid())
+  name            String
+  designation     String?
+  organization    String?
+  city            String?
+  content         String
+  rating          Int         @default(5)
+
+  // Media
+  photoUrl        String?
+  videoUrl        String?
+
+  // Status
+  isActive        Boolean     @default(true)
+  isFeatured      Boolean     @default(false)
+
+  createdAt       DateTime    @default(now())
+
+  @@map("testimonials")
+}
+
+// ─── FAQ ────────────────────────────────────────────────────
+model FAQ {
+  id              String      @id @default(cuid())
+  question        String
+  answer          String
+  category        String      @default("General")
+  order           Int         @default(0)
+  isActive        Boolean     @default(true)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("faqs")
+}
+
+// ─── Activity Log ───────────────────────────────────────────
+model ActivityLog {
+  id              String      @id @default(cuid())
+  action          String
+  entityType      String      // e.g. "lead", "enrollment", "user"
+  entityId        String?
+  userId          String?
+  details         Json?
+  ipAddress       String?
+
+  createdAt       DateTime    @default(now())
+
+  @@map("activity_logs")
+}
